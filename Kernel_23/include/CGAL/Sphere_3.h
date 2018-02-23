@@ -18,6 +18,7 @@
 //
 // $URL$
 // $Id$
+// SPDX-License-Identifier: LGPL-3.0+
 //
 //
 // Author(s)     : Stefan Schirra
@@ -289,7 +290,7 @@ std::istream&
 extract(std::istream& is, Sphere_3<R>& c, const Cartesian_tag&)
 {
     typename R::Point_3 center;
-    typename R::FT squared_radius;
+    typename R::FT squared_radius(0);
     int o=0;
     switch(get_mode(is)) {
     case IO::ASCII :
@@ -301,6 +302,7 @@ extract(std::istream& is, Sphere_3<R>& c, const Cartesian_tag&)
         is >> o;
         break;
     default:
+        is.setstate(std::ios::failbit);
         std::cerr << "" << std::endl;
         std::cerr << "Stream must be in ascii or binary mode" << std::endl;
         break;
@@ -317,7 +319,7 @@ extract(std::istream& is, Sphere_3<R>& c, const Homogeneous_tag&)
 {
     typename R::Point_3 center;
     typename R::FT squared_radius;
-    int o;
+    int o=0;
     switch(get_mode(is)) {
     case IO::ASCII :
         is >> center >> squared_radius >> o;
@@ -328,6 +330,7 @@ extract(std::istream& is, Sphere_3<R>& c, const Homogeneous_tag&)
         is >> o;
         break;
     default:
+        is.setstate(std::ios::failbit);
         std::cerr << "" << std::endl;
         std::cerr << "Stream must be in ascii or binary mode" << std::endl;
         break;

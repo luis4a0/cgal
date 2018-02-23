@@ -18,6 +18,7 @@
 //
 // $URL$
 // $Id$
+// SPDX-License-Identifier: LGPL-3.0+
 // 
 //
 // Author(s)     : Stefan Schirra
@@ -95,6 +96,19 @@ inline Sign operator* (Sign s1, Sign s2)
 {
     return static_cast<Sign> (static_cast<int> (s1) * static_cast<int> (s2));
 }
+
+
+enum Box_parameter_space_2
+     {
+        LEFT_BOUNDARY = 0,
+        RIGHT_BOUNDARY,
+        BOTTOM_BOUNDARY,
+        TOP_BOUNDARY,
+        INTERIOR,
+        EXTERIOR
+     };
+    
+
 
 #ifdef CGAL_CFG_MATCHING_BUG_5
 

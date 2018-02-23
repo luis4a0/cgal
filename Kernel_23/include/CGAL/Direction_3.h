@@ -18,6 +18,7 @@
 //
 // $URL$
 // $Id$
+// SPDX-License-Identifier: LGPL-3.0+
 // 
 //
 // Author(s)     : Andreas Fabri, Stefan Schirra
@@ -188,7 +189,7 @@ template <class R >
 std::istream&
 extract(std::istream& is, Direction_3<R>& d, const Cartesian_tag&) 
 {
-  typename R::FT x, y, z;
+  typename R::FT x(0), y(0), z(0);
   switch(get_mode(is)) {
     case IO::ASCII :
       is >> iformat(x) >> iformat(y) >> iformat(z);
@@ -199,6 +200,7 @@ extract(std::istream& is, Direction_3<R>& d, const Cartesian_tag&)
       read(is, z);
       break;
     default:
+      is.setstate(std::ios::failbit);
       std::cerr << "" << std::endl;
       std::cerr << "Stream must be in ascii or binary mode" << std::endl;
       break;
@@ -224,6 +226,7 @@ extract(std::istream& is, Direction_3<R>& d, const Homogeneous_tag&)
         read(is, z);
         break;
     default:
+        is.setstate(std::ios::failbit);
         std::cerr << "" << std::endl;
         std::cerr << "Stream must be in ascii or binary mode" << std::endl;
         break;

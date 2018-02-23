@@ -13,16 +13,18 @@
 //
 // $URL$
 // $Id$
+// SPDX-License-Identifier: LGPL-3.0+
 // 
 //
 // Author(s)     : Fernando Cacciola
 //
-// Descriptions of the file format can be found at
+// Description of the file format can be found at the following address:
 // http://www.autodesk.com/techpubs/autocad/acad2000/dxf/
- 
 
 #ifndef CGAL_IO_DXF_WRITER_H
 #define CGAL_IO_DXF_WRITER_H
+
+#include <CGAL/disable_warnings.h>
 
 #include <CGAL/basic.h>
 #include <CGAL/algorithm.h>
@@ -279,5 +281,7 @@ private:
 } ;
 
 } // end namespace CGAL
+
+#include <CGAL/enable_warnings.h>
 
 #endif // CGAL_IO_DXF_WRITER_H

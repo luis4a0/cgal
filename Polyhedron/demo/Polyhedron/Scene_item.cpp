@@ -8,7 +8,7 @@
 const QColor CGAL::Three::Scene_item::defaultColor = QColor(100, 100, 255);
 
 CGAL::Three::Scene_item::Scene_item(int buffers_size, int vaos_size)
-  : name_("unamed"),
+  : name_("unnamed"),
     color_(defaultColor),
     visible_(true),
     are_buffers_filled(false),
@@ -65,6 +65,8 @@ QString modeName(RenderingMode mode) {
     {
     case Points:
         return QObject::tr("points");
+    case ShadedPoints:
+        return QObject::tr("shaded points");
     case Wireframe:
         return QObject::tr("wire");
     case Flat:
@@ -88,6 +90,8 @@ const char* slotName(RenderingMode mode) {
     {
     case Points:
         return SLOT(setPointsMode());
+    case ShadedPoints:
+      return SLOT(setShadedPointsMode());
     case Wireframe:
         return SLOT(setWireframeMode());
     case Flat:
@@ -119,10 +123,6 @@ QMenu* CGAL::Three::Scene_item::contextMenu()
     }
 
     defaultContextMenu = new QMenu(name());
-    // defaultContextMenu->addAction(name());
-    // defaultContextMenu->addSeparator();
-    // QMenu* modeMenu = new QMenu(QObject::tr("Rendering mode"),
-    //                             defaultContextMenu);
     for(unsigned int mode = 0; mode < NumberOfRenderingMode;
         ++mode)
     {
@@ -132,8 +132,8 @@ QMenu* CGAL::Three::Scene_item::contextMenu()
                                       .arg(mName),
                                       this,
                                       slotName(RenderingMode(mode)));
+        defaultContextMenu->actions().last()->setProperty("is_groupable", true);
     }
-    // defaultContextMenu->addAction(modeMenu->menuAction());
     return defaultContextMenu;
 }
 
@@ -156,6 +156,8 @@ void CGAL::Three::Scene_item::selection_changed(bool) {}
 void CGAL::Three::Scene_item::setVisible(bool b)
 {
   visible_ = b;
+  if(b)
+    itemVisibilityChanged();
 }
 
 
@@ -215,18 +217,6 @@ CGAL::Three::Scene_item::Header_data CGAL::Three::Scene_item::header() const
 QString CGAL::Three::Scene_item::computeStats(int )
 {
   return QString();
-}
-
-void CGAL::Three::Scene_item::printPrimitiveId(QPoint, CGAL::Three::Viewer_interface*)
-{
-}
-
-void CGAL::Three::Scene_item::printPrimitiveIds(CGAL::Three::Viewer_interface*)const
-{
-}
-bool CGAL::Three::Scene_item::testDisplayId(double, double, double, CGAL::Three::Viewer_interface*)
-{
-    return false;
 }
 
 #include <CGAL/double.h>

@@ -18,6 +18,7 @@
 //
 // $URL$
 // $Id$
+// SPDX-License-Identifier: LGPL-3.0+
 // 
 //
 // Author(s)     : Andreas Fabri, Stefan Schirra
@@ -121,9 +122,21 @@ public:
     return R().construct_difference_of_vectors_3_object()(*this,v);
   }
 
+  Vector_3& operator-=(const Vector_3& v)
+  {
+    *this = R().construct_difference_of_vectors_3_object()(*this,v);
+    return *this;
+  }
+
   Vector_3 operator+(const Vector_3& v) const
   {
     return R().construct_sum_of_vectors_3_object()(*this,v);
+  }
+
+  Vector_3& operator+=(const Vector_3& v)
+  {
+    *this = R().construct_sum_of_vectors_3_object()(*this,v);
+    return *this;
   }
 
   Vector_3 operator/(const RT& c) const
@@ -131,9 +144,33 @@ public:
    return R().construct_divided_vector_3_object()(*this,c);
   }
 
+  Vector_3& operator/=(const RT& c)
+  {
+    *this = R().construct_divided_vector_3_object()(*this,c);
+    return *this;
+  }
+
   Vector_3 operator/(const typename First_if_different<FT_,RT>::Type & c) const
   {
    return R().construct_divided_vector_3_object()(*this,c);
+  }
+
+  Vector_3& operator/=(const typename First_if_different<FT_,RT>::Type & c)
+  {
+    *this = R().construct_divided_vector_3_object()(*this,c);
+    return *this;
+  }
+
+  Vector_3& operator*=(const RT& c)
+  {
+    *this = R().construct_scaled_vector_3_object()(*this,c);
+    return *this;
+  }
+
+  Vector_3& operator*=(const typename First_if_different<FT_,RT>::Type & c)
+  {
+    *this = R().construct_scaled_vector_3_object()(*this,c);
+    return *this;
   }
 
   typename cpp11::result_of<typename R::Compute_x_3(Vector_3)>::type
@@ -279,7 +316,7 @@ template <class R >
 std::istream&
 extract(std::istream& is, Vector_3<R>& v, const Cartesian_tag&) 
 {
-  typename R::FT x, y, z;
+  typename R::FT x(0), y(0), z(0);
   switch(get_mode(is)) {
     case IO::ASCII :
       is >> iformat(x) >> iformat(y) >> iformat(z);
@@ -290,6 +327,7 @@ extract(std::istream& is, Vector_3<R>& v, const Cartesian_tag&)
       read(is, z);
       break;
     default:
+      is.setstate(std::ios::failbit);
       std::cerr << "" << std::endl;
       std::cerr << "Stream must be in ascii or binary mode" << std::endl;
       break;
@@ -316,6 +354,7 @@ extract(std::istream& is, Vector_3<R>& v, const Homogeneous_tag&)
         read(is, hw);
         break;
     default:
+        is.setstate(std::ios::failbit);
         std::cerr << "" << std::endl;
         std::cerr << "Stream must be in ascii or binary mode" << std::endl;
         break;

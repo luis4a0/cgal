@@ -15,6 +15,7 @@
 //
 // $URL$
 // $Id$
+// SPDX-License-Identifier: LGPL-3.0+
 //
 //
 // Author(s)     :  ASCLEPIOS Project (INRIA Sophia-Antipolis), Laurent Rineau
@@ -268,8 +269,8 @@ int readGisHeader( const char* name,_image* im)
 
   status = (int)iss.str().length();
   switch ( status ) {
-  case 2 :    im->zdim = 1;
-  case 3 :    im->vdim = 1;
+  case 2 :    im->zdim = 1; CGAL_FALLTHROUGH;
+  case 3 :    im->vdim = 1; CGAL_FALLTHROUGH;
   case 4 :    break;
   default :
     fprintf( stderr, "readGisHeader: unable to read dimensions in '%s'\n", name );

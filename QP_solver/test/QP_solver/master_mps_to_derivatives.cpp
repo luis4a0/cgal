@@ -14,6 +14,7 @@
 //
 // $URL$
 // $Id$
+// SPDX-License-Identifier: GPL-3.0+
 // 
 //
 // Author(s)     : Kaspar Fischer <fischerk@inf.ethz.ch>
@@ -24,7 +25,7 @@
 #include <string>
 #include <cstdlib>
 
-#include <boost/iterator/transform_iterator.hpp>
+#include <CGAL/boost/iterator/transform_iterator.hpp>
 #include <boost/iterator/zip_iterator.hpp>
 #include <boost/shared_ptr.hpp>
 
@@ -57,6 +58,12 @@ namespace QP_from_mps_detail {
   struct MPS_type_name<int> {
     static const char *name() { return "integer"; }
   };
+#ifdef CGAL_USE_GMPXX
+  template<>
+  struct MPS_type_name<mpq_class> {
+    static const char *name() { return "rational"; }
+  };
+#endif
 #ifdef CGAL_USE_GMP  
   template<>
   struct MPS_type_name<CGAL::Gmpq> {
@@ -83,10 +90,22 @@ namespace QP_from_mps_detail {
   };
 
 #ifdef CGAL_USE_GMP
+#ifdef CGAL_USE_GMPXX
+  template<>
+  struct IT_to_ET<int> {
+    typedef mpz_class ET;
+  };
+
+  template<>
+  struct IT_to_ET<mpq_class> {
+    typedef mpq_class ET;
+  };
+#else
   template<>
   struct IT_to_ET<int> {
     typedef CGAL::Gmpz ET;
   };
+#endif
   
   template<>
   struct IT_to_ET<CGAL::Gmpq> {
@@ -155,7 +174,7 @@ create_output_file(const char *filename, // Note: "Bernd3" and not
 
 template<typename NT>
 struct tuple_add : 
-  public std::unary_function<const boost::tuple<NT, NT>&, NT>
+  public CGAL::unary_function<const boost::tuple<NT, NT>&, NT>
 {
   NT operator()(const boost::tuple<NT, NT>& t) const
   {
@@ -199,14 +218,14 @@ void create_shifted_instance(const CGAL::Quadratic_program_from_mps <IT>& qp,
   std::vector<IT> Av(m, IT(0));
   for (int i=0; i<m; ++i) 
     for (int j=0; j<n; ++j)
-      Av[i] += (*(qp.get_a()+j))[i] * v[j];
+      Av[i] += (const IT&)(*(qp.get_a()+j))[i] * v[j];
 
   // compute - 2 v^T D into mvTD:
   std::vector<IT> mvTD(n, IT(0));  // -2D^Tv
   for (int i=0; i<n; ++i) {
     for (int j=0; j<n; ++j)
       mvTD[i] 
-	+= ( j <= i ? (*(qp.get_d()+i))[j] : (*(qp.get_d()+j))[i]) * v[j];
+	+= ( j <= i ? (const IT&)(*(qp.get_d()+i))[j] : (const IT&)(*(qp.get_d()+j))[i]) * v[j];
     mvTD[i] *= -1;
   }
 

@@ -13,15 +13,23 @@
 //
 // $URL$
 // $Id$
+// SPDX-License-Identifier: GPL-3.0+
 //
 // Author(s)     : Sebastien Loriot <sebastien.loriot@cgal.org>,
 //                 Jane Tournois
 //
 
+#include <CGAL/Mesh_3/io_signature.h>
+#include "Scene_c3t3_item.h"
 #include <QtCore/qglobal.h>
 
+#ifdef USE_SURFACE_MESH
+#include "Scene_surface_mesh_item.h"
+#else
 #include "Polyhedron_type.h"
 #include "Scene_polyhedron_item.h"
+#include <CGAL/boost/graph/graph_traits_Polyhedron_3.h>
+#endif
 #include "Scene_polylines_item.h"
 
 #include <CGAL/Three/Polyhedron_demo_plugin_helper.h>
@@ -40,8 +48,8 @@
 
 #include <CGAL/boost/graph/properties.h>
 #include <CGAL/boost/graph/Euler_operations.h>
-#include <CGAL/boost/graph/graph_traits_Polyhedron_3.h>
 #include <CGAL/property_map.h>
+#include <CGAL/IO/Complex_3_in_triangulation_3_to_vtk.h>
 
 #include <vtkSmartPointer.h>
 #include <vtkDataSetReader.h>
@@ -66,7 +74,15 @@
 #include <vtkCellArray.h>
 #include <vtkType.h>
 #include <vtkCommand.h>
+#include <vtkXMLUnstructuredGridWriter.h>
 
+#ifdef USE_SURFACE_MESH
+typedef Scene_surface_mesh_item Scene_facegraph_item;
+#else
+typedef Scene_polyhedron_item Scene_facegraph_item;
+#endif
+typedef Scene_facegraph_item::Face_graph FaceGraph;
+typedef boost::property_traits<boost::property_map<FaceGraph, CGAL::vertex_point_t>::type>::value_type Point;
 namespace CGAL{
 
   class ErrorObserverVtk : public vtkCommand
@@ -203,10 +219,10 @@ namespace CGAL{
     vtkPoints* const vtk_points = vtkPoints::New();
     vtkCellArray* const vtk_cells = vtkCellArray::New();
 
-    vtk_points->Allocate(pmesh.size_of_vertices());
-    vtk_cells->Allocate(pmesh.size_of_facets());
+    vtk_points->Allocate(num_vertices(pmesh));
+    vtk_cells->Allocate(num_faces(pmesh));
 
-    std::map<Polyhedron::Vertex_handle, vtkIdType> Vids;
+    std::map<vertex_descriptor, vtkIdType> Vids;
     vtkIdType inum = 0;
 
     BOOST_FOREACH(vertex_descriptor v, vertices(pmesh))
@@ -267,31 +283,35 @@ class Polyhedron_demo_vtk_plugin :
   Q_PLUGIN_METADATA(IID "com.geometryfactory.PolyhedronDemo.IOPluginInterface/1.0")
 
 public:
-  typedef boost::graph_traits<Polyhedron>::vertex_descriptor vertex_descriptor;
-  typedef boost::graph_traits<Polyhedron>::face_descriptor face_descriptor;
+  typedef boost::graph_traits<FaceGraph>::vertex_descriptor vertex_descriptor;
+  typedef boost::graph_traits<FaceGraph>::face_descriptor face_descriptor;
 
+#ifdef USE_SURFACE_MESH
   QString nameFilters() const {
-    return "VTK PolyData files (*.vtk);; VTK XML PolyData (*.vtp)"; }
+    return "VTK PolyData files Surface_mesh (*.vtk);; VTK XML PolyData Surface_mesh (*.vtp);; VTK XML UnstructuredGrid Surface_mesh(*.vtu)"; }
+  QString name() const { return "vtk_sm_plugin"; }
+#else
+  QString nameFilters() const {
+    return "VTK PolyData files Polyhedron (*.vtk);; VTK XML PolyData Polyhedron (*.vtp);; VTK XML UnstructuredGrid Polyhedron(*.vtu)"; }
   QString name() const { return "vtk_plugin"; }
-
+#endif
   bool canSave(const CGAL::Three::Scene_item* item)
   {
-    return qobject_cast<const Scene_polyhedron_item*>(item);
+    return (qobject_cast<const Scene_facegraph_item*>(item)
+            || qobject_cast<const Scene_c3t3_item*>(item));
   }
   bool save(const CGAL::Three::Scene_item* item, QFileInfo fileinfo)
   {
     std::string extension = fileinfo.suffix().toLower().toStdString();
-    if ( extension != "vtk" && extension != "vtp")
+    if ( extension != "vtk" && extension != "vtp" && extension != "vtu")
       return false;
 
     std::string output_filename = fileinfo.absoluteFilePath().toStdString();
 
-    const Scene_polyhedron_item* poly_item =
-      qobject_cast<const Scene_polyhedron_item*>(item);
+    const Scene_facegraph_item* poly_item =
+      qobject_cast<const Scene_facegraph_item*>(item);
 
-    if (!poly_item)
-      return false;
-    else
+    if (poly_item)
     {
       if (extension != "vtp")
         CGAL::polygon_mesh_to_vtkUnstructured<vtkPolyDataWriter>(
@@ -301,6 +321,19 @@ public:
         CGAL::polygon_mesh_to_vtkUnstructured<vtkXMLPolyDataWriter>(
         *poly_item->polyhedron(),
         output_filename.data());
+    }
+    else
+    {
+      const Scene_c3t3_item* c3t3_item =
+          qobject_cast<const Scene_c3t3_item*>(item);
+      if(!c3t3_item || extension != "vtu")
+        return false;
+
+      vtkSmartPointer<vtkXMLUnstructuredGridWriter> writer =
+          vtkSmartPointer<vtkXMLUnstructuredGridWriter>::New();
+      writer->SetFileName( output_filename.data());
+      writer->SetInputData(CGAL::output_c3t3_to_vtk_unstructured_grid(c3t3_item->c3t3()));
+      writer->Write();
     }
     return true;
   }
@@ -328,8 +361,8 @@ public:
 
     std::string fname = fileinfo.absoluteFilePath().toStdString();
 
-    Polyhedron poly;
-    // Try to read .vtk in a polyhedron
+    FaceGraph* poly = new FaceGraph();
+    // Try to read .vtk in a facegraph
     vtkSmartPointer<vtkPointSet> data;
     vtkSmartPointer<CGAL::ErrorObserverVtk> obs =
       vtkSmartPointer<CGAL::ErrorObserverVtk>::New();
@@ -393,20 +426,20 @@ public:
       msgBox.exec();
     }
 
-    if (CGAL::vtkPointSet_to_polygon_mesh(data, poly))
+    if (CGAL::vtkPointSet_to_polygon_mesh(data, *poly))
     {
-      Scene_polyhedron_item* poly_item = new Scene_polyhedron_item(poly);
+      Scene_facegraph_item* poly_item = new Scene_facegraph_item(poly);
       poly_item->setName(fileinfo.fileName());
       return poly_item;
     }
     else{
       // extract only segments
-      std::vector< std::vector<Polyhedron::Point> > segments;
+      std::vector< std::vector<Point> > segments;
       extract_segments_from_vtkPointSet(data,segments);
       if (segments.empty()) return NULL; /// TODO handle point sets
       Scene_polylines_item* polyline_item = new Scene_polylines_item();
       polyline_item->setName(fileinfo.fileName());
-      BOOST_FOREACH(const std::vector<Polyhedron::Point_3>& segment, segments)
+      BOOST_FOREACH(const std::vector<Point>& segment, segments)
         polyline_item->polylines.push_back(segment);
       return polyline_item;
     }

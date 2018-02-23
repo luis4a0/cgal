@@ -17,6 +17,7 @@
 //
 // $URL$
 // $Id$
+// SPDX-License-Identifier: LGPL-3.0+
 //
 
 #ifdef CGAL_HEADER_ONLY
@@ -27,7 +28,7 @@
 
 #ifdef _MSC_VER
 // Suppress deprecated warning for fileno and strdup
-#  pragma warning(disable:4996) 
+#  pragma warning(disable: 4127 4706 4996) 
 
 #include <fcntl.h>
 #include <sys/types.h>
@@ -856,7 +857,6 @@ _image* _readNonInterlacedImage(const char *name) {
    on stdout */
 CGAL_INLINE_FUNCTION
 int _writeImage(_image *im, const char *name_to_be_written ) {
-
   int r = ImageIO_NO_ERROR;
   std::size_t length = 0;
   char *name = NULL;

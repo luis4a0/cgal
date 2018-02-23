@@ -5,7 +5,7 @@
 #include <iostream>
 #include <cmath>
 
-#include <CGAL/AABB_intersections.h> 
+#include <CGAL/intersections.h>
 #include "types.h"
 #include "Color_ramp.h"
 
@@ -16,6 +16,7 @@
 #include <CGAL/AABB_face_graph_triangle_primitive.h>
 
 #include <QtCore/qglobal.h>
+#include <QMap>
 #include <QGLViewer/manipulatedFrame.h>
 #include <QGLViewer/qglviewer.h>
 #include <QOpenGLFunctions_2_1>

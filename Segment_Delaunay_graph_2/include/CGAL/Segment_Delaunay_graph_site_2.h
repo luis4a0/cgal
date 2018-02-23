@@ -14,6 +14,7 @@
 //
 // $URL$
 // $Id$
+// SPDX-License-Identifier: GPL-3.0+
 // 
 //
 // Author(s)     : Menelaos Karavelas <mkaravel@iacm.forth.gr>
@@ -22,6 +23,9 @@
 
 #ifndef CGAL_SEGMENT_DELAUNAY_GRAPH_SITE_H
 #define CGAL_SEGMENT_DELAUNAY_GRAPH_SITE_H
+
+#include <CGAL/license/Segment_Delaunay_graph_2.h>
+
 
 #include <iostream>
 #include <CGAL/assertions.h>
@@ -330,6 +334,8 @@ operator>>(std::istream &is,
       Point_2 p1, p2;
       is >> p1 >> p2;
       t = Site_2::construct_site_2(p1, p2);
+    } else {
+      is.setstate(std::ios::failbit);
     }
   }
   return is;

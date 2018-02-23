@@ -14,6 +14,7 @@
 //
 // $URL$
 // $Id$
+// SPDX-License-Identifier: GPL-3.0+
 //
 //
 // Author(s)     : Stéphane Tayeb, Aymeric PELLE
@@ -30,6 +31,9 @@
 #ifndef CGAL_IMPLICIT_TO_LABELING_FUNCTION_WRAPPER_H
 #define CGAL_IMPLICIT_TO_LABELING_FUNCTION_WRAPPER_H
 
+#include <CGAL/license/Mesh_3.h>
+
+#include <CGAL/disable_warnings.h>
 
 #if defined(BOOST_MSVC)
 #  pragma warning(push)
@@ -187,7 +191,7 @@ public:
       typename Bmask::size_type bit_index = 0;
       for (std::vector<Sign>::const_iterator iter = mask.begin(), endIter = mask.end(); iter != endIter; ++iter)
       {
-        std::string::value_type character = *iter;
+        std::string::value_type character = static_cast<char>(*iter);
         CGAL_assertion(character == POSITIVE || character == NEGATIVE);
 
         bmask[bit_index] = (character == POSITIVE);
@@ -286,5 +290,7 @@ public:
 #if defined(BOOST_MSVC)
 #  pragma warning(pop)
 #endif
+
+#include <CGAL/enable_warnings.h>
 
 #endif // CGAL_IMPLICIT_TO_LABELING_FUNCTION_WRAPPER_H

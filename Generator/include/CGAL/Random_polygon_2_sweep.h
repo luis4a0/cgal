@@ -18,6 +18,7 @@
 //
 // $URL$
 // $Id$
+// SPDX-License-Identifier: LGPL-3.0+
 // 
 //
 // Author(s)     : Geert-Jan Giezeman <geert@cs.uu.nl>
@@ -25,6 +26,8 @@
 
 #ifndef CGAL_RANDOM_POLYGON_2_SWEEP_H
 #define CGAL_RANDOM_POLYGON_2_SWEEP_H
+
+#include <CGAL/disable_warnings.h>
 
 #include <CGAL/enum.h>
 #include <CGAL/Polygon_2/polygon_assertions.h>
@@ -580,5 +583,7 @@ void make_simple_polygon(Iterator points_begin, Iterator points_end,
 }
 
 } // end of namespace CGAL
+
+#include <CGAL/enable_warnings.h>
 
 #endif // CGAL_RANDOM_POLYGON_2_SWEEP_H
